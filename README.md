@@ -1,5 +1,7 @@
 # Reproducibility package — *How Reliable and Valid Is an LLM Technology-Evaluation Judge? A Retrospective Measurement Audit Against Ex-Post Outcomes of Korean SMEs*
 
+Public repository: [REPOSITORY-URL]
+
 This repository regenerates Tables I, V-1, V-1b, V-2, V-3 and V-4 of the paper together with the
 operating-point, sector-stratified, paired-comparison and triage tables — AUROC plateaus with
 bootstrap / DeLong confidence intervals, pairwise DeLong and TOST equivalence tests, test–retest

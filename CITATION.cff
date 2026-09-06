@@ -14,7 +14,7 @@ authors:
 version: 0.1.0
 date-released: 2026-09-06
 license: MIT
-repository-code: "https://github.com/<org>/<repo>"   # placeholder
+repository-code: "[REPOSITORY-URL]"
 keywords:
   - large language models
   - LLM-as-a-judge
