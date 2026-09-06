@@ -19,10 +19,6 @@ python analysis/reproduce.py --data data/synthetic --out data/synthetic/output
 
 # Reproduction tables
 
-Data: `data/synthetic` — firms.csv 9,926 rows, reliability.csv 1,668 ratings, screener.csv 230 rows. Bootstrap 2000 (seed 0); TOST 4000; CV seed 42.
-
-# Reproduction tables
-
 Data: `release/data/synthetic` — firms.csv 9,926 rows, reliability.csv 1,668 ratings, screener.csv 230 rows. Bootstrap 2000 (seed 0); TOST 4000; CV seed 42.
 
 
