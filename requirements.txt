@@ -1,0 +1,23 @@
+# Minimum supported versions (the package runs on anything at or above these).
+# python >= 3.11
+pandas>=2.2
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+matplotlib>=3.8
+httpx>=0.27          # only for scoring/score_openrouter.py
+pytest>=8            # optional, for analysis/test_metrics.py
+
+# ---------------------------------------------------------------------------
+# Exact versions used to produce EXPECTED_OUTPUT.md (python 3.12.4).
+# For a like-for-like reproduction install the pinned set instead:
+#     pip install -r requirements-lock.txt
+# ---------------------------------------------------------------------------
+# python==3.12.4
+# pandas==3.0.2
+# numpy==2.4.4
+# scipy==1.17.1
+# scikit-learn==1.8.0
+# matplotlib==3.11.0
+</content>
+</invoke>

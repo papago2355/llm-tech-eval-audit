@@ -1,0 +1,19 @@
+# secrets
+.env
+.env.*
+!.env.example
+# private / proprietary data — never commit
+data/private/*
+!data/private/.gitkeep
+*.xlsx
+*.xls
+# scoring outputs may contain description text
+scoring/*.jsonl
+scoring/*.csv
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+# OS
+.DS_Store

@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use this reproducibility package, please cite the paper below (placeholder — update with venue, volume and DOI at publication)."
+type: software
+title: "Reproducibility package for: How Reliable and Valid Is an LLM Technology-Evaluation Judge? A Retrospective Measurement Audit Against Ex-Post Outcomes of Korean SMEs"
+authors:
+  - family-names: Lee
+    given-names: Jeewoong
+  - family-names: Han
+    given-names: Haeun
+  - family-names: Lee
+    given-names: Chulung
+  - family-names: Park
+    given-names: Chaeyeon
+version: 0.1.0
+date-released: 2026-09-06
+license: MIT
+repository-code: "https://github.com/<org>/<repo>"   # placeholder
+keywords:
+  - large language models
+  - LLM-as-a-judge
+  - test-retest reliability
+  - measurement validity
+  - technology evaluation
+  - SME failure screening
+preferred-citation:
+  type: article
+  title: "How Reliable and Valid Is an LLM Technology-Evaluation Judge? A Retrospective Measurement Audit Against Ex-Post Outcomes of Korean SMEs"
+  authors:
+    - family-names: Lee
+      given-names: Jeewoong
+    - family-names: Han
+      given-names: Haeun
+    - family-names: Lee
+      given-names: Chulung
+    - family-names: Park
+      given-names: Chaeyeon
+  journal: "IEEE Access (under review)"
+  year: 2026
