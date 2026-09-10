@@ -1,12 +1,11 @@
-LICENSE — placeholder, to be finalised at publication
+LICENSE
 
 Code (analysis/, synthetic/, scoring/, tools/):            MIT License
 Synthetic data (data/synthetic/) and prompts (prompts/):    Creative Commons Attribution 4.0 International (CC BY 4.0)
 
 MIT License
 
-Copyright (c) 2026 the authors of "How Reliable and Valid Is an LLM Technology-Evaluation Judge?
-A Measurement Audit Against Ex-Post SME Outcomes"
+Copyright (c) 2026 the authors of "How Reliable and Valid Is an LLM Technology-Evaluation Judge? A Retrospective Measurement Audit Against Ex-Post Outcomes of Korean SMEs"
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,

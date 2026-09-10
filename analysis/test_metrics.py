@@ -138,6 +138,40 @@ def test_stratified_auroc_removes_between_stratum_shift():
     assert r["n_strata_used"] == 2
 
 
+def test_pu_implied_auroc_identity():
+    """Hiding a random fraction of positives among the negatives deflates AUROC by (1-a)*A + a/2, and the inverse recovers A."""
+    rng = np.random.default_rng(3)
+    n = 60000
+    y = (rng.random(n) < 0.3).astype(int)
+    s = y * 1.0 + rng.normal(0, 1.5, n)
+    a_true = M.auroc(y, s)
+    alpha = 0.10
+    neg_n = int((y == 0).sum())
+    k = int(round(alpha * neg_n / (1 - alpha)))          # hidden positives so that k / (neg_n + k) = alpha
+    hide = rng.choice(np.flatnonzero(y == 1), size=k, replace=False)
+    y_obs = y.copy()
+    y_obs[hide] = 0
+    a_obs = M.auroc(y_obs, s)
+    assert abs(a_obs - ((1 - alpha) * a_true + alpha / 2)) < 0.01, (a_obs, a_true)
+    assert abs(M.pu_implied_auroc(a_obs, alpha) - a_true) < 0.01
+    assert M.pu_implied_auroc(0.7, 0.0) == 0.7
+
+
+def test_purity_thresholds_rule():
+    """Lowest admissible accept cut-off / highest admissible reject cut-off; overlap routes to human review."""
+    scores = np.arange(1, 11, dtype=float)
+    tiers = np.array(["C"] * 5 + ["A"] * 5)
+    t_acc, t_rej = M.purity_thresholds(scores, tiers, purity=0.80, min_n=5)
+    assert t_acc == 5.0, t_acc          # scores >= 5: 6 firms, 5 A (0.83); scores >= 4: 7 firms, 5 A (0.71)
+    assert t_rej == 6.0, t_rej          # scores <= 6: 6 firms, 5 C (0.83); scores <= 7: 7 firms, 5 C (0.71)
+    bins = M.purity_route(scores, t_acc, t_rej)
+    assert list(bins[:4]) == ["auto_reject"] * 4 and list(bins[6:]) == ["auto_accept"] * 4
+    assert list(bins[4:6]) == ["human_review", "human_review"]   # 5 and 6 satisfy both rules
+    assert M.purity_thresholds(scores, tiers, purity=1.0, min_n=6) == (None, None)
+    cv = M.purity_triage_cv(scores, tiers, purity=0.8, n_repeats=2, n_splits=2, min_n=2)
+    assert abs(sum(cv["share"].values()) - 1.0) < 1e-12 and cv["folds"] == 4
+
+
 def test_triage_cv_routes_everyone_once():
     y, s1, _ = _data(5, n=800)
     r = M.triage_cv(y, s1 * 10 + 50, n_splits=5, seed=1)

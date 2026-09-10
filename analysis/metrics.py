@@ -351,6 +351,14 @@ def ppv_npv_at_prevalence(sens: float, spec: float, prev: float) -> dict:
 
 
 # --------------------------------------------------------------------------- stratified AUROC
+def pu_implied_auroc(auroc_obs: float, alpha: float) -> float:
+    """Implied AUROC against the true labels when a fraction ``alpha`` of the observed negatives are hidden
+    positives selected completely at random (PU / SCAR): AUROC_obs = (1 - alpha) * AUROC_true + alpha / 2."""
+    if not 0.0 <= alpha < 1.0:
+        raise ValueError("alpha must be in [0, 1)")
+    return (float(auroc_obs) - alpha / 2.0) / (1.0 - alpha)
+
+
 def stratified_auroc(y, s, strata, min_per_class: int = 1) -> dict:
     """Pooled within-stratum AUROC: P(score_fail > score_normal | same stratum).
 
@@ -455,6 +463,88 @@ def triage_cv(y, s, n_splits: int = 5, seed: int = 42, **rule) -> dict:
     out["false_rejects"] = out["bands"]["reject"]["n_normal"]
     out["routing"] = [str(r) for r in route]
     return out
+
+
+PURITY_BINS = ("auto_accept", "human_review", "auto_reject")
+
+
+def purity_thresholds(scores, tiers, purity: float, min_n: int = 5, accept_label: str = "A", reject_label: str = "C"):
+    """Purity rule of the manuscript's screener triage (Supplementary Table S-5).
+
+    t_accept = the LOWEST observed score t such that, among training firms with score >= t (at least ``min_n`` of
+    them), the share of ``accept_label`` firms is >= ``purity``; None if no cut-off attains it.
+    t_reject = the HIGHEST observed score t such that, among firms with score <= t (at least ``min_n``), the share
+    of ``reject_label`` firms is >= ``purity``; None if unattainable. Candidate cut-offs are the observed scores."""
+    scores = np.asarray(scores, float)
+    tiers = np.asarray(tiers, str)
+    uniq = np.sort(np.unique(scores))
+    t_acc = None
+    for t in uniq:
+        msk = scores >= t
+        if msk.sum() >= min_n and (tiers[msk] == accept_label).mean() >= purity:
+            t_acc = float(t)
+            break
+    t_rej = None
+    for t in uniq[::-1]:
+        msk = scores <= t
+        if msk.sum() >= min_n and (tiers[msk] == reject_label).mean() >= purity:
+            t_rej = float(t)
+            break
+    return t_acc, t_rej
+
+
+def purity_route(scores, t_acc, t_rej) -> np.ndarray:
+    """Route each firm: auto_accept if score >= t_acc, auto_reject if score <= t_rej, else human_review;
+    a firm satisfying both (overlapping thresholds) goes to human_review."""
+    scores = np.asarray(scores, float)
+    acc = np.zeros(len(scores), bool) if t_acc is None else scores >= t_acc
+    rej = np.zeros(len(scores), bool) if t_rej is None else scores <= t_rej
+    both = acc & rej
+    out = np.full(len(scores), "human_review", dtype=object)
+    out[acc & ~both] = "auto_accept"
+    out[rej & ~both] = "auto_reject"
+    return out
+
+
+def purity_triage_cv(scores, tiers, purity: float, n_repeats: int = 20, n_splits: int = 5, min_n: int = 5) -> dict:
+    """Held-out routing of the screener test set: repeated stratified K-fold (repeat r uses random_state = r),
+    thresholds selected on each training fold by ``purity_thresholds``, applied to the held-out fold; counts
+    pooled over all repeats. Returns shares of the three bins, held-out precision of the accept / reject bins,
+    recall of A / C, and how many folds attained each threshold (the manuscript's Supplementary Table S-5)."""
+    from sklearn.model_selection import StratifiedKFold
+    scores = np.asarray(scores, float)
+    tiers = np.asarray(tiers, str)
+    labels = sorted(set(tiers))
+    counts = {b: {t: 0 for t in labels} for b in PURITY_BINS}
+    n_folds = acc_def = rej_def = 0
+    acc_share_by_rep = []
+    for rep in range(n_repeats):
+        skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=rep)
+        rep_acc = 0
+        for tr, te in skf.split(scores, tiers):
+            t_acc, t_rej = purity_thresholds(scores[tr], tiers[tr], purity, min_n)
+            n_folds += 1
+            acc_def += t_acc is not None
+            rej_def += t_rej is not None
+            bins = purity_route(scores[te], t_acc, t_rej)
+            for b, t in zip(bins, tiers[te]):
+                counts[b][t] += 1
+            rep_acc += int((bins == "auto_accept").sum())
+        acc_share_by_rep.append(rep_acc / len(scores))
+    total = len(scores) * n_repeats
+    share = {b: sum(counts[b].values()) / total for b in PURITY_BINS}
+    n_acc = sum(counts["auto_accept"].values())
+    n_rej = sum(counts["auto_reject"].values())
+    n_a = int((tiers == "A").sum()) * n_repeats
+    n_c = int((tiers == "C").sum()) * n_repeats
+    return {"purity": purity, "n": int(len(scores)), "n_repeats": n_repeats, "n_splits": n_splits, "min_n": min_n,
+            "share": share, "counts": counts,
+            "accept_share_sd_over_repeats": float(np.std(acc_share_by_rep, ddof=1)) if n_repeats > 1 else None,
+            "precision_accept": counts["auto_accept"].get("A", 0) / n_acc if n_acc else None,
+            "precision_reject": counts["auto_reject"].get("C", 0) / n_rej if n_rej else None,
+            "recall_A": counts["auto_accept"].get("A", 0) / n_a if n_a else None,
+            "recall_C": counts["auto_reject"].get("C", 0) / n_c if n_c else None,
+            "folds": n_folds, "folds_accept_defined": acc_def, "folds_reject_defined": rej_def}
 
 
 def triage_reweight(triage: dict, prev: float) -> dict:

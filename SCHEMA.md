@@ -9,7 +9,7 @@ scripts run on both. No file contains a firm name, a description text, or any fr
 
 | column | type | definition |
 |---|---|---|
-| `firm_id` | string | opaque, de-identified key (synthetic: `S00000`…; real extract: a random re-keying, not the source row number) |
+| `firm_id` | string | opaque, de-identified key (synthetic: `S00000`…; real extract: a random re-keying, not the source row number; rows are written in `firm_id` order, so row position carries no information either) |
 | `tier` | `A` / `B` / `C` | expert grade tier. A = {AAA, AA, A+, A}; C = grade starts with "C" (CCC, CC, C); B otherwise |
 | `grade13` | int 0–12 | ordinal index of the 13-level expert grade in `AAA, AA, A+, A, BBB+, BBB, BB+, BB, B+, B, CCC, CC, C` (0 = AAA … 12 = C; **higher = riskier**, so it is used directly as a risk score) |
 | `ksic2` | string (2 chars) | 2-digit KSIC industry division = first two digits of the 5-digit code in the industry field. Keep as a string (leading zeros). Synthetic data uses 100 synthetic codes `00`–`99` |
@@ -25,10 +25,10 @@ scripts run on both. No file contains a firm name, a description text, or any fr
 
 Derived populations used by `reproduce.py`:
 
-* **Below-A population** = `tier != "A"` (Table I: 8,460 firms, 499 failures → prevalence 5.9%, used for PPV re-weighting).
-* **Below-A frozen set** = `in_frozen_set == 1 & tier != "A"` (941 rows = 377 failures + 564 normals): Tables V-1, V-1c, OP, SEC, TRI.
-* **B-tier frozen set** = `in_frozen_set == 1 & tier == "B"` (878 rows = 328 + 550): Tables V-1b, V-1d.
-* **Frozen set** (967 rows): Table V-2.
+* **Below-A population** = `tier != "A"` (TABLE 1: 8,460 firms, 499 failures → prevalence 5.9%, used for PPV re-weighting).
+* **Below-A frozen set** = `in_frozen_set == 1 & tier != "A"` (941 rows = 377 failures + 564 normals): TABLE 3 (Below-A rows), TABLE 4, Supplementary Tables S-1, S-3, S-5 and S-6.
+* **B-tier frozen set** = `in_frozen_set == 1 & tier == "B"` (878 rows = 328 + 550): TABLE 3 (B-tier rows), Supplementary Table S-1 (B-tier).
+* **Frozen set** (967 rows): TABLE 6.
 
 In the real extract the five `score_*` columns are populated only for `in_frozen_set == 1` rows (plus the
 reliability-sample firms); the synthetic generator fills them for every firm, which additionally enables
@@ -65,4 +65,5 @@ column names; keep rows whose status is one of the two labels; `grade13` and `ti
 string; `ksic2` from the 5-digit code inside the parentheses of the industry field; `desc_len_chars` from
 the description; scores joined from the per-model output CSVs of the frozen set; `score_tfidf_oof` recomputed
 from the description text with the protocol above; reliability and screener from the run logs. Firm ids are
-re-keyed with a seeded permutation so the extract cannot be aligned with the source row order.
+re-keyed with a seeded permutation and the files are written in `firm_id` order, so neither the key nor the row
+position can be aligned with the source row order.

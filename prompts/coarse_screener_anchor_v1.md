@@ -1,6 +1,6 @@
 ---
 prompt_id: coarse_screener_anchor_v1
-target: coarse A/B/C expert-tier screen (Section V-F, Table V-3 "anchor-primed LLM")
+target: coarse A/B/C expert-tier screen (Section V-F, TABLE 7 "anchor-primed LLM")
 source: experiments/26_apprentice_evaluator/run_coarse.py (SYS, prompt(), TAIL) — strings copied verbatim
 decoding: temperature 0, max_tokens 1400, no seed; models anthropic/claude-sonnet-4.6 and openai/gpt-oss-20b (reasoning effort "low" for gpt-oss)
 inputs: industry code string (업종), IPC code, product name, technology name, first 1200 characters of the description;

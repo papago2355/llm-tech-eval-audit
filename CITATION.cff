@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this reproducibility package, please cite the paper below (placeholder — update with venue, volume and DOI at publication)."
+message: "If you use this reproducibility package, please cite the paper below (update with volume and DOI at publication)."
 type: software
 title: "Reproducibility package for: How Reliable and Valid Is an LLM Technology-Evaluation Judge? A Retrospective Measurement Audit Against Ex-Post Outcomes of Korean SMEs"
 authors:
@@ -11,10 +11,11 @@ authors:
     given-names: Chulung
   - family-names: Park
     given-names: Chaeyeon
-version: 0.1.0
-date-released: 2026-09-06
+version: 1.0.0
+date-released: 2026-09-10
 license: MIT
-repository-code: "[REPOSITORY-URL]"
+repository-code: "https://github.com/papago2355/llm-tech-eval-audit"
+url: "https://github.com/papago2355/llm-tech-eval-audit"
 keywords:
   - large language models
   - LLM-as-a-judge

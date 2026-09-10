@@ -3,7 +3,7 @@
 Data: `data/synthetic` — firms.csv 9,926 rows, reliability.csv 1,668 ratings, screener.csv 230 rows. Bootstrap 2000 (seed 0); TOST 4000; CV seed 42.
 
 
-## Table I — Dataset composition by grade tier (population)
+## TABLE 1 — Dataset composition by grade tier (population)
 
 | Grade tier | Firms | Failures | Rate |
 |---|---|---|---|
@@ -16,7 +16,7 @@ Data: `data/synthetic` — firms.csv 9,926 rows, reliability.csv 1,668 ratings, 
 Usable description (80–2,000 chars): 8,030 firms (403 failures) — by tier (firms/failures) A 1,256/26, B 6,711/328, C 63/49; Below-A usable: 6,774 firms (377 failures). Frozen evaluation set: 967 rows = 403 failures (incl. 26 A-tier) + 564 registry-normal; Below-A rows 941, B-tier rows 878, C-tier rows 63.
 
 
-## Table V-1 — Method-invariant plateau on the Below-A frozen set
+## TABLE 3 (Below-A rows) — AUROC of failure-risk predictors on the Below-A frozen set
 
 *n = 941 rows, 377 failures, 564 registry-normal. Bootstrap: 2000 row resamples, seed 0, percentile 2.5/97.5. DeLong CI is asymptotic.*
 
@@ -32,7 +32,7 @@ Usable description (80–2,000 chars): 8,030 firms (403 failures) — by tier (f
 | Length-only | 941 | 0.524 | [0.487, 0.562] | [0.486, 0.562] |
 
 
-## Table V-1b — Within the B-tier (frozen set)
+## TABLE 3 (B-tier rows) — AUROC of failure-risk predictors within the B-tier (frozen set)
 
 *n = 878 rows, 328 failures, 550 registry-normal. Bootstrap: 2000 row resamples, seed 0, percentile 2.5/97.5. DeLong CI is asymptotic.*
 
@@ -48,7 +48,7 @@ Usable description (80–2,000 chars): 8,030 firms (403 failures) — by tier (f
 | Length-only | 878 | 0.519 | [0.479, 0.558] | [0.479, 0.558] |
 
 
-## Table V-1c — Pairwise DeLong tests and TOST equivalence (Below-A frozen set)
+## Supplementary Table S-1 (Below-A) — Pairwise DeLong tests and TOST equivalence (Below-A frozen set)
 
 *n = 941. DeLong: two-sided test for correlated AUROCs. TOST: equivalence if the 90% paired-bootstrap CI of the AUROC difference lies within ±0.05 (4000 resamples, seed 0); p_TOST from the DeLong SE.*
 
@@ -65,7 +65,7 @@ Usable description (80–2,000 chars): 8,030 firms (403 failures) — by tier (f
 | Expert grade (ordinal 0-12) vs Length-only | 941 | 0.614 | 0.524 | +0.090 | 0.025 | 0.000 | [+0.048, +0.131] | 0.945 | no |
 
 
-## Table V-1d — Pairwise DeLong tests and TOST equivalence (B-tier frozen set)
+## Supplementary Table S-1 (B-tier) — Pairwise DeLong tests and TOST equivalence (B-tier frozen set)
 
 *n = 878. DeLong: two-sided test for correlated AUROCs. TOST: equivalence if the 90% paired-bootstrap CI of the AUROC difference lies within ±0.05 (4000 resamples, seed 0); p_TOST from the DeLong SE.*
 
@@ -76,7 +76,23 @@ Usable description (80–2,000 chars): 8,030 firms (403 failures) — by tier (f
 | Expert grade (ordinal 0-12) vs TF-IDF (char n-gram) OOF | 878 | 0.572 | 0.606 | -0.033 | 0.024 | 0.162 | [-0.072, +0.005] | 0.238 | no |
 
 
-## Supplement — AUROC on the full labeled population (scores available outside the frozen set)
+## Supplementary Table S-6 — PU sensitivity band: implied true AUROC if a fraction α of registry-normal firms are undetected failures (Below-A frozen set)
+
+*Under the selected-completely-at-random assumption AUROC_obs = (1 − α)·AUROC_true + α/2, so AUROC_true = (AUROC_obs − α/2)/(1 − α); the same α applies to every predictor scored on the same firms, so the ordering and the sign of every paired difference are preserved.*
+
+| Predictor | Observed AUROC | Implied true AUROC, α = 2% | Implied true AUROC, α = 5% | Implied true AUROC, α = 10% |
+|---|---|---|---|---|
+| Expert grade (ordinal 0-12) | 0.614 | 0.616 | 0.620 | 0.627 |
+| TF-IDF (char n-gram) OOF | 0.608 | 0.610 | 0.614 | 0.620 |
+| Sonnet 4.6 | 0.597 | 0.599 | 0.602 | 0.608 |
+| GPT-5.5 | 0.600 | 0.602 | 0.605 | 0.611 |
+| Qwen 3.5 | 0.600 | 0.602 | 0.606 | 0.612 |
+| DeepSeek V4 | 0.551 | 0.552 | 0.553 | 0.556 |
+| Llama 4 Maverick | 0.530 | 0.531 | 0.532 | 0.534 |
+| Length-only | 0.524 | 0.524 | 0.525 | 0.527 |
+
+
+## Extra (not in the manuscript) — AUROC on the full labeled population (scores available outside the frozen set)
 
 *Present only when the extract carries LLM scores for firms outside the frozen set (synthetic data does).*
 
@@ -99,7 +115,7 @@ Usable description (80–2,000 chars): 8,030 firms (403 failures) — by tier (f
 | C-tier | Length-only | 90 | 67 | 0.726 | [0.610, 0.838] |
 
 
-## Table V-2 — Cross-model style profiles (frozen set)
+## TABLE 6 — Cross-model style profiles (frozen set)
 
 *n = 967; fail-rate = share with prob_fail ≥ 50; Spearman ρ vs Sonnet on pairwise-complete rows.*
 
@@ -112,7 +128,7 @@ Usable description (80–2,000 chars): 8,030 firms (403 failures) — by tier (f
 | Llama 4 Maverick | 967 | 48.1 | 23.1 | 48% | 0.43 |
 
 
-## Table V-4 — Test–retest reliability of the judge on byte-identical descriptions
+## TABLE 5 — Test–retest repeatability of the judge on byte-identical descriptions (bootstrap and per-tier intervals: Supplementary Table S-2)
 
 *One-way random-effects ICC: ICC(1) single rating, ICC(1,k) mean of k re-scorings; F-distribution CI (exact) and firm-level cluster-bootstrap CI; SEM = √MSW; SDC95 = 1.96·√2·SEM; spans are max−min over re-scorings.*
 
@@ -140,7 +156,7 @@ ICC(1) by expert tier:
 | 0 | C | 39 | 0.989 | 1.55 |
 
 
-## Table OP — Operating points on the Below-A frozen set
+## TABLE 4 — Screening operating points on the Below-A frozen set
 
 *Flag = prob_fail ≥ 50. Capture = sensitivity; burden = share of registry-normal firms flagged. PPV/NPV re-weighted to the population Below-A prevalence 5.90% (Bayes, from sensitivity/specificity).*
 
@@ -153,7 +169,7 @@ ICC(1) by expert tier:
 | Llama 4 Maverick | 941 | 200 | 257 | 177 | 307 | 53.1% | 45.6% | 43.8% | 6.8% | 94.87% | 46.0% |
 
 
-## Table SEC — Sector-stratified AUROC (Below-A frozen set)
+## Supplementary Table S-3 — Sector-stratified AUROC (Below-A frozen set)
 
 *Pooled within-ksic2 AUROC = P(score_fail > score_normal | same 2-digit division), pair-weighted over divisions with both classes present; compared with the unstratified AUROC on the rows used.*
 
@@ -168,7 +184,7 @@ ICC(1) by expert tier:
 Reference: leave-one-out sector failure-rate prior (no text) — AUROC 0.588 on 934 rows.
 
 
-## Table TRI — Cross-validated two-sided triage (Sonnet score, Below-A frozen set)
+## Extra (not in the manuscript) — Outcome-rate triage on the Below-A frozen set (cross-validated)
 
 *5-fold stratified CV (seed 42): on each training fold, clear-accept = largest cut-off whose band failure rate is ≤ 0.5× the training prevalence; clear-reject = smallest cut-off whose band failure rate is ≥ 1.5× the prevalence (bands ≥ 20 firms). Routing is evaluated out-of-fold. False accepts = failures routed to accept; false rejects = registry-normal firms routed to reject.*
 
@@ -179,7 +195,7 @@ Reference: leave-one-out sector failure-rate prior (no text) — AUROC 0.588 on 
 | Expert grade (ordinal 0-12) | 941 | 0.0% (0) | 93.3% (878) | 6.7% (63) | 0 / 377 | 14 / 564 | — | 77.8% | 0.0% / 96.9% / 3.1% | — | 24.7% |
 
 
-## Table V-3 — Two-sided coarse screen (A-vs-rest, C-vs-rest)
+## TABLE 7 — Clear-accept / clear-reject AUROC of the coarse screen (A-vs-rest, C-vs-rest)
 
 *n = 230 (90 A / 100 B / 40 C). Quality score is higher-is-better; C-vs-rest uses the negated score. Bootstrap CIs as above.*
 
@@ -187,3 +203,15 @@ Reference: leave-one-out sector failure-rate prior (no text) — AUROC 0.588 on 
 |---|---|---|---|---|---|
 | Bare (label-free) LLM | 230 | 0.680 | [0.612, 0.748] | 0.636 | [0.545, 0.735] |
 | Anchor-primed LLM | 230 | 0.713 | [0.639, 0.779] | 0.708 | [0.615, 0.791] |
+
+
+## Supplementary Table S-5 — Purity-rule triage on the screener test set (repeated stratified 5-fold CV, 20 repeats)
+
+*On each training fold the accept cut-off is the lowest score at or above which at least P of the training firms (min. 5) are expert-A, and the reject cut-off the highest score at or below which at least P are expert-C; both are applied to the held-out fold and counts are pooled over all repeats (repeat r uses random_state = r). Precision = share of expert-A among auto-accepted (expert-C among auto-rejected); recall = share of all A (C) firms routed to that bin. n/a = bin never populated. Fold assignment depends on the row order of screener.csv, so the held-out shares and precisions reproduce the manuscript's values only approximately (accept share within about one percentage point; the sparse P = 0.80 accept bin, populated in a minority of folds, varies most); the qualitative result — a small accept bin at modest precision and no attainable reject bin — is stable.*
+
+| Configuration | Purity P | Auto-accept (± SD over repeats) | Human review | Auto-reject | Precision (accept) | Precision (reject) | Recall A | Recall C | Accept cut-off attained (folds) | Reject cut-off attained (folds) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Anchor-primed LLM | 0.80 | 11.5% ± 0.9 | 87.6% | 1.0% | 0.757 | 0.636 | 0.222 | 0.035 | 100 / 100 | 67 / 100 |
+| Anchor-primed LLM | 0.70 | 18.8% ± 1.2 | 79.6% | 1.7% | 0.693 | 0.429 | 0.332 | 0.041 | 100 / 100 | 69 / 100 |
+| Bare (label-free) LLM | 0.80 | 3.7% ± 1.0 | 95.9% | 0.4% | 0.702 | 0.263 | 0.066 | 0.006 | 97 / 100 | 7 / 100 |
+| Bare (label-free) LLM | 0.70 | 10.5% ± 1.1 | 88.9% | 0.6% | 0.650 | 0.172 | 0.174 | 0.006 | 100 / 100 | 17 / 100 |

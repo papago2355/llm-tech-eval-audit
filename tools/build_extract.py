@@ -15,7 +15,7 @@ Inputs (defaults assume the layout of the authors' analysis repository, with thi
 
 Joins between files are made on the exact description text. Identical texts occur for several firms, so each
 external row is assigned to one not-yet-used labeled row, preferring a candidate with the same grade and status
-(TextMatcher). Firm ids are re-keyed with a seeded random permutation so the extract cannot be aligned with the
+(TextMatcher). Firm ids are re-keyed with a seeded random permutation and every file is written in firm_id order, so neither the key nor the row position can be aligned with the
 source row order. Report lines print only counts.
 
 Usage:
@@ -57,7 +57,7 @@ def auroc(y, s) -> float:
 
 
 def tfidf_oof(texts: np.ndarray, y: np.ndarray, seed: int = 42) -> np.ndarray:
-    """Exact Table V-1 TF-IDF protocol (experiments/24_backbone_failures/tfidf_baseline.py, char_wb 2-4)."""
+    """Exact TABLE 3 TF-IDF protocol (experiments/24_backbone_failures/tfidf_baseline.py, char_wb 2-4)."""
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import StratifiedKFold, cross_val_predict
@@ -152,7 +152,7 @@ def main():
         lab.loc[m.idx.values, col] = m.prob_fail.values
         print(f"  {col}: {int(m.prob_fail.notna().sum())} scores")
 
-    # TF-IDF out-of-fold within the Below-A frozen set (exact Table V-1 protocol)
+    # TF-IDF out-of-fold within the Below-A frozen set (exact TABLE 3 protocol)
     lab["score_tfidf_oof"] = np.nan
     ba = fz[(lab.loc[fz.idx, "tier"].values != "A") & fz[COL_DESC].notna().values].copy()
     y = lab.loc[ba.idx, "failure"].values
@@ -163,7 +163,7 @@ def main():
     cols = ["firm_id", "tier", "grade13", "ksic2", "desc_len_chars", "failure", *MODEL_FILES, "score_tfidf_oof", "in_frozen_set"]
     firms = lab[cols].copy()
     firms["grade13"] = firms.grade13.astype("Int64")
-    firms.to_csv(args.out / "firms.csv", index=False)
+    firms.sort_values("firm_id", kind="stable").to_csv(args.out / "firms.csv", index=False)
 
     # ---------------------------------------------------------------- reliability
     rs = pd.read_csv(args.rel_sample)
@@ -178,7 +178,7 @@ def main():
     out_rel = pd.DataFrame({"firm_id": lab.loc[rel.idx.astype(int), "firm_id"].values,
                             "temperature": rel["temp"].astype(float).values, "rep": rel["rep"].astype(int).values,
                             "prob_fail": pd.to_numeric(rel["prob_fail"], errors="coerce").values})
-    out_rel.to_csv(args.out / "reliability.csv", index=False)
+    out_rel.sort_values("firm_id", kind="stable").to_csv(args.out / "reliability.csv", index=False)
 
     # ---------------------------------------------------------------- screener (Sonnet rows only)
     ct = pd.read_csv(args.coarse_dir / "coarse_test.csv")
@@ -194,8 +194,7 @@ def main():
         scr = scr.merge(j, on="row_id", how="left")
     print(f"screener rows: {len(scr)} | labeled-corpus matches: {int((~unl).sum())} | "
           f"anchor scores: {int(scr.quality_score_anchor.notna().sum())} | bare scores: {int(scr.quality_score_bare.notna().sum())}")
-    scr.drop(columns=["row_id"])[["firm_id", "expert_tier", "quality_score_bare", "quality_score_anchor"]].to_csv(
-        args.out / "screener.csv", index=False)
+    scr.drop(columns=["row_id"])[["firm_id", "expert_tier", "quality_score_bare", "quality_score_anchor"]].sort_values("firm_id", kind="stable").to_csv(args.out / "screener.csv", index=False)
     print(f"wrote {args.out}/firms.csv, reliability.csv, screener.csv")
 
 

@@ -3,7 +3,7 @@
 The real linked dataset (firms evaluated between 2018 and 2023, linked to registry operating status as
 of end-June 2023) is proprietary. This script produces three CSV files with the
 schema documented in SCHEMA.md whose *statistical structure* is calibrated to the manuscript
-(Table I composition, tier-specific failure rates, sector heterogeneity, score distributions of the
+(TABLE 1 composition, tier-specific failure rates, sector heterogeneity, score distributions of the
 five backbones, within-tier outcome-validity ceiling, expert-grade ordinal, test-retest reliability
 structure, and the two-sided screener), but which contains no real firm, no real description and no
 real score.
@@ -15,7 +15,7 @@ Generative model (all latents standard normal unless stated)
   q   ~ N(0,1)  description verbosity          (drives length; weakly seen by the LLMs; NOT predictive)
   u_k ~ N(0, sector_sd^2)  sector (2-digit division) effect on the failure logit
   fail | tier, z, k  ~  logistic(alpha_tier + beta*z + u_k), realised so that the failure COUNT in each
-                        tier equals Table I exactly (30 / 432 / 67)
+                        tier equals TABLE 1 exactly (30 / 432 / 67)
   expert grade13   : within-tier ordinal cut of  rho_g*z + lam_gh*h + noise  at the empirical
                      within-tier grade shares (higher latent -> riskier grade)
   Sonnet score     : affine( rho_s*z + lam_sh*h + lam_sq*q + noise + tier offset + sector bias v_k ),
@@ -24,7 +24,7 @@ Generative model (all latents standard normal unless stated)
   other backbones  : a_m * Sonnet_std + b_m * z + c_m * noise — (a_m, b_m) solved so that the Spearman
                      correlation with Sonnet and the Below-A AUROC hit their targets
   score shape      : every backbone latent is finally passed through a monotone sinh-arcsinh warp solved
-                     so that the fail-verdict rate (share >= 50) matches Table V-2; being monotone, the
+                     so that the fail-verdict rate (share >= 50) matches TABLE 6; being monotone, the
                      warp leaves the calibrated AUROCs and Spearman correlations untouched
   TF-IDF OOF score : rho_t*z + small loadings on h, q + noise, defined only on the Below-A frozen set
   description len  : log-normal-ish, inside 80..2000 chars for exactly the per-cell counts of TIER_USABLE
@@ -34,7 +34,7 @@ Generative model (all latents standard normal unless stated)
                      the firm draw is score-spread-weighted and the rep noise is calibrated so that the
                      between-firm SD and both ICC(1) values match the manuscript
   screener.csv     : 230 firms (90 A / 100 B / 40 C) with 0-100 quality scores (higher = better) for the bare
-                     and the anchor-primed screener, calibrated to Table V-3 AUROCs
+                     and the anchor-primed screener, calibrated to TABLE 7 AUROCs
 
 Usage
 -----
@@ -59,8 +59,8 @@ GRADE13 = ["AAA", "AA", "A+", "A", "BBB+", "BBB", "BB+", "BB", "B+", "B", "CCC",
 TIER_OF_INDEX = {i: ("A" if i <= 3 else "B" if i <= 9 else "C") for i in range(13)}
 TIER_INDEX_RANGE = {"A": (0, 3), "B": (4, 9), "C": (10, 12)}
 
-TIER_N = {"A": 1466, "B": 8370, "C": 90}            # Table I (total 9,926; Below-A 8,460)
-TIER_FAIL = {"A": 30, "B": 432, "C": 67}            # Table I (2.0% / 5.2% / 74.4%; total 529, Below-A 499)
+TIER_N = {"A": 1466, "B": 8370, "C": 90}            # TABLE 1 (total 9,926; Below-A 8,460)
+TIER_FAIL = {"A": 30, "B": 432, "C": 67}            # TABLE 1 (2.0% / 5.2% / 74.4%; total 529, Below-A 499)
 # relative within-tier grade shares (aggregate counts from the source corpus; no firm-level information)
 GRADE_SHARES = {"A": [79, 238, 411, 738], "B": [626, 1034, 816, 1316, 846, 3732], "C": [37, 29, 24]}
 # firms retained by the 80-2,000-character description filter: (firms, failures) per tier.
@@ -73,7 +73,7 @@ FROZEN_B_NORMALS = 550                               # + 14 C-tier normals = 564
 LEN_LOG_MEAN, LEN_LOG_SD = 5.67, 0.75               # log(chars) within the usable range
 SHORT_SHARE_OF_UNUSABLE = 0.72                       # rest of the unusable descriptions are > 2000 chars
 
-# Table V-2 style profiles on the frozen set: mean, SD, Spearman rho vs Sonnet, Below-A AUROC target and
+# TABLE 6 style profiles on the frozen set: mean, SD, Spearman rho vs Sonnet, Below-A AUROC target and
 # fail_rate = share of prob_fail >= 50. The fail rate is hit by a monotone reshaping of the score
 # distribution (shape_to_fail_rate), which leaves the AUROC and the Spearman correlations untouched.
 MODELS = {

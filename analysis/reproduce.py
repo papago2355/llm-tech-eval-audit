@@ -6,17 +6,18 @@ extract (SCHEMA.md). Writes <out>/tables.md, <out>/results.json and two figures.
 Usage:
     python analysis/reproduce.py --data data/synthetic [--out data/synthetic/output] [--n-boot 2000]
 
-Tables produced (numbering mirrors the manuscript):
-    Table I      composition by tier (population)
-    Table V-1    method plateau on the Below-A frozen set: AUROC with bootstrap 95% CI + DeLong CI
-    Table V-1b   the same within the B-tier
-    Table V-1c   pairwise DeLong tests and bootstrap TOST (Sonnet vs each predictor, expert vs TF-IDF)
-    Table V-2    style profiles (mean, SD, fail-verdict rate, Spearman vs Sonnet) on the frozen set
-    Table V-4    reliability: ICC(1), ICC(1,k) with F and cluster-bootstrap CIs, SEM, SDC, agreement
-    Table OP     operating points at prob_fail >= 50, PPV/NPV re-weighted to the population prevalence
-    Table SEC    sector-stratified (within-ksic2) pooled AUROC vs unstratified
-    Table TRI    cross-validated two-sided triage routing
-    Table V-3    two-sided screener AUROCs (bare / anchor-primed)
+Tables produced (numbering of the submitted manuscript; results.json keeps the draft keys, see README):
+    TABLE 1      composition by tier (population)
+    TABLE 3      AUROC of failure-risk predictors on the Below-A frozen set (bootstrap 95% CI + DeLong CI), and within the B-tier
+    Suppl. S-1   pairwise DeLong tests and bootstrap TOST (Sonnet vs each predictor, expert vs TF-IDF)
+    Suppl. S-6   PU sensitivity band: implied true AUROC for hidden-failure fractions alpha = 2, 5, 10 %
+    TABLE 6      style profiles (mean, SD, fail-verdict rate, Spearman vs Sonnet) on the frozen set
+    TABLE 5      reliability: ICC(1), ICC(1,k) with F and cluster-bootstrap CIs, SEM, SDC, agreement (Suppl. S-2 intervals)
+    TABLE 4      operating points at prob_fail >= 50, PPV/NPV re-weighted to the population prevalence
+    Suppl. S-3   sector-stratified (within-ksic2) pooled AUROC vs unstratified
+    Suppl. S-5   purity-rule triage of the screener test set (repeated stratified 5-fold CV)
+    Extra        outcome-rate triage on the Below-A frozen set (not in the manuscript)
+    TABLE 7      clear-accept / clear-reject AUROCs of the coarse screen (bare / anchor-primed)
 """
 from __future__ import annotations
 
@@ -83,7 +84,7 @@ class Report:
 
 # ----------------------------------------------------------------------------- tables
 def table_composition(firms, R):
-    R.section("Table I — Dataset composition by grade tier (population)")
+    R.section("TABLE 1 — Dataset composition by grade tier (population)")
     rows, js = [], {}
     for t in ("A", "B", "C"):
         g = firms[firms.tier == t]
@@ -153,8 +154,26 @@ def table_pairwise(df, R, title, key, pairs, n_boot, seed, margin=0.05):
     R.json[key] = js
 
 
+def table_pu_band(df, R, key, alphas=(0.02, 0.05, 0.10)):
+    """Supplementary Table S-6: implied true AUROC if a fraction alpha of the registry-normal firms are undetected failures."""
+    R.section("Supplementary Table S-6 — PU sensitivity band: implied true AUROC if a fraction α of registry-normal firms are undetected failures (Below-A frozen set)",
+              "Under the selected-completely-at-random assumption AUROC_obs = (1 − α)·AUROC_true + α/2, so AUROC_true = (AUROC_obs − α/2)/(1 − α); "
+              "the same α applies to every predictor scored on the same firms, so the ordering and the sign of every paired difference are preserved.")
+    rows, js = [], {}
+    for col, label in PREDICTORS:
+        if col not in df.columns or df[col].notna().sum() == 0:
+            continue
+        sub = df[df[col].notna()]
+        a = M.auroc(sub.failure, sub[col])
+        implied = [M.pu_implied_auroc(a, al) for al in alphas]
+        rows.append([label, f3(a)] + [f3(x) for x in implied])
+        js[col] = {"auroc_obs": a, **{f"alpha_{al:.2f}": x for al, x in zip(alphas, implied)}}
+    R.table(["Predictor", "Observed AUROC"] + [f"Implied true AUROC, α = {al * 100:.0f}%" for al in alphas], rows)
+    R.json[key] = js
+
+
 def table_style(fz, R):
-    R.section("Table V-2 — Cross-model style profiles (frozen set)",
+    R.section("TABLE 6 — Cross-model style profiles (frozen set)",
               f"n = {len(fz)}; fail-rate = share with prob_fail ≥ {THRESHOLD:.0f}; Spearman ρ vs Sonnet on pairwise-complete rows.")
     rows, js = [], {}
     for col in LLM_COLS:
@@ -170,7 +189,7 @@ def table_style(fz, R):
 
 
 def table_reliability(rel, firms, R, n_boot, seed):
-    R.section("Table V-4 — Test–retest reliability of the judge on byte-identical descriptions",
+    R.section("TABLE 5 — Test–retest repeatability of the judge on byte-identical descriptions (bootstrap and per-tier intervals: Supplementary Table S-2)",
               "One-way random-effects ICC: ICC(1) single rating, ICC(1,k) mean of k re-scorings; F-distribution CI (exact) "
               "and firm-level cluster-bootstrap CI; SEM = √MSW; SDC95 = 1.96·√2·SEM; spans are max−min over re-scorings.")
     rows, agr_rows, tier_rows, js = [], [], [], {}
@@ -219,7 +238,7 @@ def table_operating(df, R, pop_prev, title, key):
 
 
 def table_sector(df, R, key):
-    R.section("Table SEC — Sector-stratified AUROC (Below-A frozen set)",
+    R.section("Supplementary Table S-3 — Sector-stratified AUROC (Below-A frozen set)",
               "Pooled within-ksic2 AUROC = P(score_fail > score_normal | same 2-digit division), pair-weighted over divisions with "
               "both classes present; compared with the unstratified AUROC on the rows used.")
     rows, js = [], {}
@@ -246,7 +265,7 @@ def table_sector(df, R, key):
 
 def table_triage(df, R, pop_prev, seed, key, rule=None):
     rule = rule or dict(accept_ratio=0.5, reject_lift=1.5, min_band_n=20)
-    R.section("Table TRI — Cross-validated two-sided triage (Sonnet score, Below-A frozen set)",
+    R.section("Extra (not in the manuscript) — Outcome-rate triage on the Below-A frozen set (cross-validated)",
               f"5-fold stratified CV (seed {seed}): on each training fold, clear-accept = largest cut-off whose band failure rate is "
               f"≤ {rule['accept_ratio']}× the training prevalence; clear-reject = smallest cut-off whose band failure rate is "
               f"≥ {rule['reject_lift']}× the prevalence (bands ≥ {rule['min_band_n']} firms). Routing is evaluated out-of-fold. "
@@ -277,8 +296,36 @@ def table_triage(df, R, pop_prev, seed, key, rule=None):
     R.json[key] = js
 
 
+def table_purity_triage(scr, R, key, purities=(0.80, 0.70), n_repeats=20):
+    """Supplementary Table S-5: purity-rule triage on the screener test set, thresholds chosen on training folds."""
+    R.section(f"Supplementary Table S-5 — Purity-rule triage on the screener test set (repeated stratified 5-fold CV, {n_repeats} repeats)",
+              "On each training fold the accept cut-off is the lowest score at or above which at least P of the training firms (min. 5) are "
+              "expert-A, and the reject cut-off the highest score at or below which at least P are expert-C; both are applied to the held-out "
+              "fold and counts are pooled over all repeats (repeat r uses random_state = r). Precision = share of expert-A among auto-accepted "
+              "(expert-C among auto-rejected); recall = share of all A (C) firms routed to that bin. n/a = bin never populated. "
+              "Fold assignment depends on the row order of screener.csv, so the held-out shares and precisions reproduce the manuscript's values only approximately "
+              "(accept share within about one percentage point; the sparse P = 0.80 accept bin, populated in a minority of folds, varies most); the qualitative result — a small accept bin at modest precision and no attainable reject bin — is stable.")
+    rows, js = [], {}
+    for col, label in [("quality_score_anchor", "Anchor-primed LLM"), ("quality_score_bare", "Bare (label-free) LLM")]:
+        if col not in scr.columns:
+            continue
+        sub = scr[scr[col].notna()]
+        for P in purities:
+            t = M.purity_triage_cv(sub[col], sub.expert_tier, P, n_repeats=n_repeats)
+            pa = "n/a" if t["precision_accept"] is None else f3(t["precision_accept"])
+            pr = "n/a" if t["precision_reject"] is None else f3(t["precision_reject"])
+            rows.append([label, f"{P:.2f}", f"{100 * t['share']['auto_accept']:.1f}% ± {100 * (t['accept_share_sd_over_repeats'] or 0):.1f}",
+                         f"{100 * t['share']['human_review']:.1f}%", f"{100 * t['share']['auto_reject']:.1f}%",
+                         pa, pr, f3(t["recall_A"]), f3(t["recall_C"]),
+                         f"{t['folds_accept_defined']} / {t['folds']}", f"{t['folds_reject_defined']} / {t['folds']}"])
+            js[f"{col}__P{P:.2f}"] = t
+    R.table(["Configuration", "Purity P", "Auto-accept (± SD over repeats)", "Human review", "Auto-reject",
+             "Precision (accept)", "Precision (reject)", "Recall A", "Recall C", "Accept cut-off attained (folds)", "Reject cut-off attained (folds)"], rows)
+    R.json[key] = js
+
+
 def table_screener(scr, R, n_boot, seed):
-    R.section("Table V-3 — Two-sided coarse screen (A-vs-rest, C-vs-rest)",
+    R.section("TABLE 7 — Clear-accept / clear-reject AUROC of the coarse screen (A-vs-rest, C-vs-rest)",
               f"n = {len(scr)} ({(scr.expert_tier == 'A').sum()} A / {(scr.expert_tier == 'B').sum()} B / {(scr.expert_tier == 'C').sum()} C). "
               "Quality score is higher-is-better; C-vs-rest uses the negated score. Bootstrap CIs as above.")
     rows, js = [], {}
@@ -372,20 +419,21 @@ def main():
     fz_below = fz[fz.tier != "A"].copy()
     fz_b = fz[fz.tier == "B"].copy()
 
-    table_plateau(fz_below, R, "Table V-1 — Method-invariant plateau on the Below-A frozen set", "table_V1_below_A", args.n_boot, args.seed)
-    table_plateau(fz_b, R, "Table V-1b — Within the B-tier (frozen set)", "table_V1b_B_tier", args.n_boot, args.seed)
+    table_plateau(fz_below, R, "TABLE 3 (Below-A rows) — AUROC of failure-risk predictors on the Below-A frozen set", "table_V1_below_A", args.n_boot, args.seed)
+    table_plateau(fz_b, R, "TABLE 3 (B-tier rows) — AUROC of failure-risk predictors within the B-tier (frozen set)", "table_V1b_B_tier", args.n_boot, args.seed)
     pairs = [("score_sonnet", "grade13"), ("score_sonnet", "score_tfidf_oof"), ("grade13", "score_tfidf_oof"),
              ("score_sonnet", "score_gpt55"), ("score_sonnet", "score_qwen35"), ("score_sonnet", "score_deepseek"),
              ("score_sonnet", "score_llama"), ("score_sonnet", "desc_len_chars"), ("grade13", "desc_len_chars")]
-    table_pairwise(fz_below, R, "Table V-1c — Pairwise DeLong tests and TOST equivalence (Below-A frozen set)", "table_V1c_pairwise_below_A",
+    table_pairwise(fz_below, R, "Supplementary Table S-1 (Below-A) — Pairwise DeLong tests and TOST equivalence (Below-A frozen set)", "table_V1c_pairwise_below_A",
                    pairs, args.tost_boot, args.seed)
-    table_pairwise(fz_b, R, "Table V-1d — Pairwise DeLong tests and TOST equivalence (B-tier frozen set)", "table_V1d_pairwise_B_tier",
+    table_pairwise(fz_b, R, "Supplementary Table S-1 (B-tier) — Pairwise DeLong tests and TOST equivalence (B-tier frozen set)", "table_V1d_pairwise_B_tier",
                    pairs[:3], args.tost_boot, args.seed)
+    table_pu_band(fz_below, R, "table_S6_pu_band_below_A")
 
     # population-level check if scores exist outside the frozen set (true for synthetic data)
     pop_scored = firms[(firms.in_frozen_set == 0) & firms.score_sonnet.notna()]
     if len(pop_scored) > 500:
-        R.section("Supplement — AUROC on the full labeled population (scores available outside the frozen set)",
+        R.section("Extra (not in the manuscript) — AUROC on the full labeled population (scores available outside the frozen set)",
                   "Present only when the extract carries LLM scores for firms outside the frozen set (synthetic data does).")
         rows, js = [], {}
         for name, sub in [("Full corpus", firms), ("Below-A", firms[firms.tier != "A"]), ("B-tier", firms[firms.tier == "B"]),
@@ -399,12 +447,13 @@ def main():
 
     table_style(fz, R)
     table_reliability(rel, firms, R, args.n_boot, args.seed)
-    table_operating(fz_below, R, pop_prev, "Table OP — Operating points on the Below-A frozen set", "table_OP_below_A")
+    table_operating(fz_below, R, pop_prev, "TABLE 4 — Screening operating points on the Below-A frozen set", "table_OP_below_A")
     table_sector(fz_below, R, "table_SEC_below_A")
     table_triage(fz_below, R, pop_prev, args.cv_seed, "table_TRI_below_A",
                  rule=dict(accept_ratio=args.triage_accept_ratio, reject_lift=args.triage_reject_lift,
                            min_band_n=args.triage_min_band_n))
     table_screener(scr, R, args.n_boot, args.seed)
+    table_purity_triage(scr, R, "table_S5_purity_triage_screener")
 
     if not args.no_figs:
         figures(fz_below, rel, out)
