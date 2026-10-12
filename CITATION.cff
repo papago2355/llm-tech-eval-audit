@@ -11,8 +11,8 @@ authors:
     given-names: Chulung
   - family-names: Park
     given-names: Chaeyeon
-version: 1.0.1
-date-released: 2026-09-10
+version: 1.0.2
+date-released: 2026-10-12
 license: MIT
 repository-code: "https://github.com/papago2355/llm-tech-eval-audit"
 url: "https://github.com/papago2355/llm-tech-eval-audit"

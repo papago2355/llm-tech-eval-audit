@@ -6,7 +6,7 @@ extract (SCHEMA.md). Writes <out>/tables.md, <out>/results.json and two figures.
 Usage:
     python analysis/reproduce.py --data data/synthetic [--out data/synthetic/output] [--n-boot 2000]
 
-Tables produced (numbering of the submitted manuscript; results.json keeps the draft keys, see README):
+Tables produced (manuscript numbering; results.json keeps the internal working keys, see README):
     TABLE 1      composition by tier (population)
     TABLE 3      AUROC of failure-risk predictors on the Below-A frozen set (bootstrap 95% CI + DeLong CI), and within the B-tier
     Suppl. S-1   pairwise DeLong tests and bootstrap TOST (Sonnet vs each predictor, expert vs TF-IDF)

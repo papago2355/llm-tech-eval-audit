@@ -1,8 +1,8 @@
-# Reference renumbering: submitted manuscript → revised manuscript
+# Reference numbering map: earlier numbering → current numbering
 
-The revision relocated several citations, so the reference list was renumbered into strict order of first citation. Matching below is by title; every reference number cited by the reviewers ([1], [2], [9], [16], [31]) is unchanged except [16] → [14] and the replacement of [31] (see the response letter, Reviewer #1, Concern #10). Numbers refer to the submitted version (9 July 2026) and to the revised manuscript of 10 September 2026.
+The reference list is numbered in strict order of first citation; when several citations moved within the text, the list was renumbered accordingly. This table maps the earlier numbering (version of 9 July 2026) to the current one (version of 10 September 2026). Matching is by title; [16] → [14], and [31] is replaced by [33].
 
-| Submitted | Revised | Reference (first author, title) |
+| Earlier | Current | Reference (first author, title) |
 |---|---|---|
 | [1] | [1] | J.-W. Lee, “Analysis of technology-related innovation characteristics affecting th…” |
 | [2] | [2] | T. H. Moon and S. Y. Sohn, “Technology credit scoring model considering both SME characteristics a…” |
@@ -61,9 +61,9 @@ The revision relocated several citations, so the reference list was renumbered i
 | [55] | [55] | P. E. Shrout and J. L. Fleiss, “Intraclass correlations: Uses in assessing rater reliability,” |
 | [56] | [63] (moved) | D. Lakens, “Equivalence tests: A practical primer for t tests, correlations, and m…” |
 
-## References added in the revision
+## References added
 
-| Revised | Reference |
+| Current | Reference |
 |---|---|
 | [33] | Y. Qiu, Y. Chen, K. Fang, L. Yu, and K. Fang, “Fraud detection by integrating multisource heterogeneous presence-only…” |
 | [56] | A. K. Menon, B. van Rooyen, C. S. Ong, and R. C. Williamson, “Learning from corrupted binary labels via class-probability estimation…” |
@@ -75,4 +75,4 @@ The revision relocated several citations, so the reference list was renumbered i
 | [62] | X. Sun and W. Xu, “Fast implementation of DeLong’s algorithm for comparing the areas unde…” |
 | [64] | K. O. McGraw and S. P. Wong, “Forming inferences about some intraclass correlation coefficients,” |
 
-Counts: submitted list 56 entries; revised list 64 entries (9 added, 1 replaced).
+Counts: earlier list 56 entries; current list 64 entries (9 added, 1 replaced).
